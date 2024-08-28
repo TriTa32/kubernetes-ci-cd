@@ -1,30 +1,11 @@
 pipeline {
-    agent {
-        kubernetes {
-            yaml '''
-                apiVersion: v1
-                kind: Pod
-                spec:
-                  containers:
-                  - name: docker
-                    image: docker:dind
-                    securityContext:
-                      privileged: true
-                    volumeMounts:
-                    - name: dind-storage
-                      mountPath: /var/lib/docker
-                  volumes:
-                  - name: dind-storage
-                    emptyDir: {}
-            '''
-        }
-    }
+    agent any
     
     environment {
+        DOCKER_API_VERSION = "1.43"
         APP_NAME = "hello-kenzan"
-        REGISTRY_HOST = "127.0.0.1:30400"
+        REGISTRY_HOST = "127.0.0.1:30400/"
     }
-    
     stages {
         stage('Checkout') {
             steps {
