@@ -2,10 +2,11 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_API_VERSION = "1.43"
+        DOCKER_API_VERSION = "1.47"
         APP_NAME = "hello-kenzan"
         REGISTRY_HOST = "127.0.0.1:30400/"
     }
+    
     stages {
         stage('Checkout') {
             steps {
@@ -13,36 +14,40 @@ pipeline {
             }
         }
         
-        stage('Build and Push') {
+        stage('Set Build Variables') {
             steps {
-                container('docker') {
-                    script {
-                        def gitCommit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                        def imageName = "${REGISTRY_HOST}/${APP_NAME}:${gitCommit}"
-                        
-                        sh "docker build -t ${imageName} -f applications/${APP_NAME}/Dockerfile applications/${APP_NAME}"
-                        sh "docker push ${imageName}"
-                    }
+                script {
+                    env.GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.IMAGE_NAME = "${env.REGISTRY_HOST}${env.APP_NAME}:${env.GIT_COMMIT_SHORT}"
                 }
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh "sudo docker build -t ${env.IMAGE_NAME} -f applications/${env.APP_NAME}/Dockerfile applications/${env.APP_NAME}"
+            }
+        }
+        
+        stage('Push') {
+            steps {
+                sh "sudo docker push ${env.IMAGE_NAME}"
             }
         }
         
         stage('Deploy') {
             steps {
-                script {
-                    def gitCommit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    def imageName = "${REGISTRY_HOST}/${APP_NAME}:${gitCommit}"
-                    
-                    kubernetesDeploy(
-                        configs: "applications/${APP_NAME}/k8s/*.yaml",
-                        kubeconfigId: 'kenzan_kubeconfig',
-                        enableConfigSubstitution: true,
-                        dockerCredentials: [
-                            [credentialsId: 'docker-registry-credentials', url: "http://${REGISTRY_HOST}"]
-                        ]
-                    )
-                }
+                kubernetesDeploy(
+                    configs: "applications/${env.APP_NAME}/k8s/*.yaml",
+                    kubeconfigId: 'kenzan_kubeconfig'
+                )
             }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
         }
     }
 }
