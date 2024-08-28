@@ -25,13 +25,13 @@ pipeline {
         
         stage('Build') {
             steps {
-                sh "docker build -t ${env.IMAGE_NAME} -f applications/${env.APP_NAME}/Dockerfile applications/${env.APP_NAME}"
+                sh "sudo docker build -t ${env.IMAGE_NAME} -f applications/${env.APP_NAME}/Dockerfile applications/${env.APP_NAME}"
             }
         }
         
         stage('Push') {
             steps {
-                sh "docker push ${env.IMAGE_NAME}"
+                sh "sudo docker push ${env.IMAGE_NAME}"
             }
         }
         
