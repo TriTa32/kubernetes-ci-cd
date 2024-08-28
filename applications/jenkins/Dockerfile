@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:2.462.1
+FROM jenkins/jenkins:2.138.4
 USER root
 
 # Pre-Install Jenkins Plugins
@@ -18,7 +18,8 @@ RUN apt-get update && apt-get install -y \
     apt-get update && apt-get install -y docker-ce
 
 # Installing kubectl
-RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+RUN set -x && \
+    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
     echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list && \
     apt-get update && apt-get install -y kubectl
 
