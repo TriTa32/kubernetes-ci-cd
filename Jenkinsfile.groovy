@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_API_VERSION = "1.47"
+        DOCKER_API_VERSION = "1.23"
         APP_NAME = "hello-kenzan"
         REGISTRY_HOST = "127.0.0.1:30400/"
     }
@@ -23,15 +23,32 @@ pipeline {
             }
         }
         
+        stage('Debug Info') {
+            steps {
+                sh 'whoami'
+                sh 'groups'
+                sh 'ls -l /var/run/docker.sock'
+            }
+        }
+        
         stage('Build') {
             steps {
-                sh "sudo docker build -t ${env.IMAGE_NAME} -f applications/${env.APP_NAME}/Dockerfile applications/${env.APP_NAME}"
+                script {
+                    try {
+                        sh "docker build -t ${env.IMAGE_NAME} -f applications/${env.APP_NAME}/Dockerfile applications/${env.APP_NAME}"
+                    } catch (Exception e) {
+                        echo "Docker build failed. Error: ${e.getMessage()}"
+                        sh 'docker version'
+                        sh 'docker info'
+                        error "Docker build failed"
+                    }
+                }
             }
         }
         
         stage('Push') {
             steps {
-                sh "sudo docker push ${env.IMAGE_NAME}"
+                sh "docker push ${env.IMAGE_NAME}"
             }
         }
         
