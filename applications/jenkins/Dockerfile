@@ -10,14 +10,15 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     apt-transport-https \
     ca-certificates \
-    curl && \
+    curl \
+    gnupg \
+    lsb-release && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" && \
     apt-get update && apt-get install -y docker-ce
 
 # Installing kubectl
-RUN set -x && \
-    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
     echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list && \
     apt-get update && apt-get install -y kubectl
 
