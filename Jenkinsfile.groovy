@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_API_VERSION = "1.47"
+        DOCKER_API_VERSION = "1.45"
         APP_NAME = "hello-kenzan"
         REGISTRY_HOST = "127.0.0.1:30400/"
     }
