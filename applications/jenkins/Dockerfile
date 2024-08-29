@@ -27,13 +27,7 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 
-# Set up Docker group
-RUN groupadd -g 999 docker || true && \
-    usermod -aG docker jenkins
-
-# Grant jenkins user group access to /var/run/docker.sock
-RUN groupadd -g 1001 dsock || true && \
-    usermod -aG dsock jenkins
+RUN usermod -aG systemd-journal jenkins
 
 # Switch back to jenkins user
 USER jenkins
