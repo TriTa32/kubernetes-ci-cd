@@ -5,7 +5,6 @@ pipeline {
         DOCKER_API_VERSION = "1.45"
         APP_NAME = "hello-kenzan"
         REGISTRY_HOST = "127.0.0.1:30400/"
-        KUBECONFIG = credentials('kenzan_kubeconfig')
     }
     
     stages {
@@ -36,34 +35,25 @@ pipeline {
             }
         }
         
-        stage('Check Kubernetes Version') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl --kubeconfig $KUBECONFIG version'
-            }
-        }
-        
-        stage('Debug Kubernetes Resources') {
-            steps {
-                sh "cat applications/${env.APP_NAME}/k8s/*.yaml"
-            }
-        }
-        
-        stage('Update Deployment YAML') {
-            steps {
-                sh "sed -i 's|image: .*|image: ${env.IMAGE_NAME}|' applications/${env.APP_NAME}/k8s/deployment.yaml"
-            }
-        }
-        
-        stage('Deploy') {
-            steps {
-                sh "kubectl --kubeconfig $KUBECONFIG apply -f applications/${env.APP_NAME}/k8s/"
-            }
-        }
-        
-        stage('Verify Deployment') {
-            steps {
-                sh "kubectl --kubeconfig $KUBECONFIG get deployments -n default"
-                sh "kubectl --kubeconfig $KUBECONFIG get pods -n default"
+                withCredentials([string(credentialsId: 'kenzan_kubeconfig', variable: 'KUBECONFIG_CONTENT')]) {
+                    sh '''
+                        echo "$KUBECONFIG_CONTENT" > kubeconfig
+                        chmod 600 kubeconfig
+                        
+                        kubectl --kubeconfig ./kubeconfig version
+                        
+                        sed -i 's|image: .*|image: ${IMAGE_NAME}|' applications/${APP_NAME}/k8s/deployment.yaml
+                        
+                        kubectl --kubeconfig ./kubeconfig apply -f applications/${APP_NAME}/k8s/
+                        
+                        kubectl --kubeconfig ./kubeconfig get deployments -n default
+                        kubectl --kubeconfig ./kubeconfig get pods -n default
+                        
+                        rm kubeconfig
+                    '''
+                }
             }
         }
     }
