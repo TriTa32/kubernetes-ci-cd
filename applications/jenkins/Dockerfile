@@ -10,10 +10,10 @@ RUN apt-get update && \
     curl \
     gnupg \
     lsb-release \
-    gettext-base && \   # Install gettext-base for envsubst
+    gettext-base && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-    
+
 # Install Docker
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
     sh get-docker.sh && \
