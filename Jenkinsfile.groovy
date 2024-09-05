@@ -37,11 +37,10 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                sh "kubectl apply -f applications/${env.APP_NAME}/k8s/deployment.yaml"
-                // kubernetesDeploy(
-                //     configs: "applications/${env.APP_NAME}/k8s/*.yaml",
-                //     kubeconfigId: 'kenzan_kubeconfig'
-                // )
+                sh """
+                    export BUILD_TAG=${env.GIT_COMMIT_SHORT}
+                    envsubst < applications/${env.APP_NAME}/k8s/deployment.yaml | kubectl apply -f -
+                """
             }
         }
     }
