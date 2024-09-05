@@ -37,17 +37,17 @@ pipeline {
         
         stage('Deploy to Kubernetes') {
             steps {
-                withKubeConfig([credentialsId: 'kenzan_kubeconfig', serverUrl: 'https://your-kubernetes-api-server-url']) {
-                    sh '''
-                        kubectl version
+                withCredentials([file(credentialsId: 'kenzan_kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh """
+                        kubectl --kubeconfig="$KUBECONFIG" version
                         
                         sed -i 's|image: .*|image: ${IMAGE_NAME}|' applications/${APP_NAME}/k8s/deployment.yaml
                         
-                        kubectl apply -f applications/${APP_NAME}/k8s/
+                        kubectl --kubeconfig="$KUBECONFIG" apply -f applications/${APP_NAME}/k8s/
                         
-                        kubectl get deployments -n default
-                        kubectl get pods -n default
-                    '''
+                        kubectl --kubeconfig="$KUBECONFIG" get deployments -n default
+                        kubectl --kubeconfig="$KUBECONFIG" get pods -n default
+                    """
                 }
             }
         }
