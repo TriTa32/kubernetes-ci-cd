@@ -35,12 +35,40 @@ pipeline {
             }
         }
         
+        stage('Check Kubernetes Version') {
+            steps {
+                withKubeConfig([credentialsId: 'kenzan_kubeconfig']) {
+                    sh 'kubectl version'
+                }
+            }
+        }
+        
+        stage('Debug Kubernetes Resources') {
+            steps {
+                sh "cat applications/${env.APP_NAME}/k8s/*.yaml"
+            }
+        }
+        
+        stage('Update Deployment YAML') {
+            steps {
+                sh "sed -i 's|image: .*|image: ${env.IMAGE_NAME}|' applications/${env.APP_NAME}/k8s/deployment.yaml"
+            }
+        }
+        
         stage('Deploy') {
             steps {
-                kubernetesDeploy(
-                    configs: "applications/${env.APP_NAME}/k8s/*.yaml",
-                    kubeconfigId: 'kenzan_kubeconfig'
-                )
+                withKubeConfig([credentialsId: 'kenzan_kubeconfig']) {
+                    sh "kubectl apply -f applications/${env.APP_NAME}/k8s/"
+                }
+            }
+        }
+        
+        stage('Verify Deployment') {
+            steps {
+                withKubeConfig([credentialsId: 'kenzan_kubeconfig']) {
+                    sh "kubectl get deployments -n default"
+                    sh "kubectl get pods -n default"
+                }
             }
         }
     }
