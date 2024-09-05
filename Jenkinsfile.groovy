@@ -5,6 +5,7 @@ pipeline {
         DOCKER_API_VERSION = "1.45"
         APP_NAME = "hello-kenzan"
         REGISTRY_HOST = "127.0.0.1:30400/"
+        KUBECONFIG = credentials('kenzan_kubeconfig')
     }
     
     stages {
@@ -37,9 +38,7 @@ pipeline {
         
         stage('Check Kubernetes Version') {
             steps {
-                withKubeConfig([credentialsId: 'kenzan_kubeconfig']) {
-                    sh 'kubectl version'
-                }
+                sh 'kubectl --kubeconfig $KUBECONFIG version'
             }
         }
         
@@ -57,18 +56,14 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                withKubeConfig([credentialsId: 'kenzan_kubeconfig']) {
-                    sh "kubectl apply -f applications/${env.APP_NAME}/k8s/"
-                }
+                sh "kubectl --kubeconfig $KUBECONFIG apply -f applications/${env.APP_NAME}/k8s/"
             }
         }
         
         stage('Verify Deployment') {
             steps {
-                withKubeConfig([credentialsId: 'kenzan_kubeconfig']) {
-                    sh "kubectl get deployments -n default"
-                    sh "kubectl get pods -n default"
-                }
+                sh "kubectl --kubeconfig $KUBECONFIG get deployments -n default"
+                sh "kubectl --kubeconfig $KUBECONFIG get pods -n default"
             }
         }
     }
