@@ -22,6 +22,10 @@ metadata:
   labels:
     app: monitor-scale
 spec:
+  selector:
+    matchLabels:
+      app: monitor-scale
+      tier: monitor-scale
   strategy:
     type: Recreate
   template:
