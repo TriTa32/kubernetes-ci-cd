@@ -5,6 +5,10 @@ metadata:
   labels:
     app: puzzle
 spec:
+  selector:
+    matchLabels:
+      app: puzzle
+      tier: puzzle
   strategy:
     type: Recreate
   template:
@@ -51,6 +55,10 @@ metadata:
   labels:
     app: mongo
 spec:
+  selector:
+    matchLabels:
+      app: mongo
+      tier: mongo
   strategy:
     type: Recreate
   template:
@@ -82,7 +90,7 @@ spec:
     tier: mongo
   type: NodePort
 ---
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
  name: puzzle
@@ -95,6 +103,9 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: puzzle
-          servicePort: 3000
+          service:
+            name: puzzle
+            port: 
+              number: 3000
