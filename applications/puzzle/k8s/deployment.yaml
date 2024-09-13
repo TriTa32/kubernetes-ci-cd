@@ -68,7 +68,7 @@ spec:
         tier: mongo
     spec:
       containers:
-      - image: mongo:latest
+      - image: mongo:4.4
         name: mongo
         imagePullPolicy: Always
         ports:
