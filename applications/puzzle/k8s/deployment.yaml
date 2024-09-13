@@ -93,11 +93,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
- name: puzzle
+  name: puzzle
 spec:
-  backend:
-    serviceName: puzzle
-    servicePort: 3000
   rules:
   - host: puzzle.192.168.99.108.xip.io
     http:
