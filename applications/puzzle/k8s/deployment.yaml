@@ -18,23 +18,19 @@ spec:
         tier: puzzle
     spec:
       containers:
-      - name: puzzle
-        image: 127.0.0.1:30400/puzzle:$BUILD_TAG
+      - image: 127.0.0.1:30400/puzzle:$BUILD_TAG
+        name: puzzle
         imagePullPolicy: Always
-        ports:
-        - containerPort: 3000
-          name: http
         lifecycle:
           postStart:
             exec:
-              command: 
-                - "/bin/sh"
-                - "-c"
-                - |
-                  /up.sh > /tmp/up.log 2>&1 || echo "PostStart failed" >> /tmp/up.log
+              command: ["/bin/sh", "-c", "/up.sh > /tmp/up.log 2>&1 || echo 'PostStart failed' >> /tmp/up.log"]
           preStop:
             exec:
               command: ["/down.sh"]
+        ports:
+        - containerPort: 3000
+          name: puzzle
 
 ---
 apiVersion: v1
